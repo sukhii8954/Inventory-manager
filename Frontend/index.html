@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">▣</span>
+        <span class="logo-text">InvenTrack</span>
+      </div>
+      <p class="header-tagline">Smart Inventory Management</p>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!--  FORM CARDS -->
+    <section class="card form-card">
+      <div class="card-header">
+        <h2 class="card-title">New Purchase Entry</h2>
+        <p class="card-subtitle">Fill in the purchase details. You can add multiple items per purchase.</p>
+      </div>
+
+      <form id="purchaseForm" novalidate>
+
+        <!-- purchasing fields -->
+        <div class="form-section-label">Purchase Info</div>
+        <div class="form-row">
+
+            <!-- will make purchase ID auto generate by own logic in JS -->
+          <div class="form-group">
+            <label for="purchaseId">Purchase ID</label>
+            <input type="text" id="purchaseId"  readonly style="opacity:0.5; cursor:not-allowed"/>
+          </div>
+
+          <div class="form-group">
+            <label for="purchaseDate">Purchase Date <span class="req">*</span></label>
+            <input type="date" id="purchaseDate" required />
+            <span class="error-msg" id="err-purchaseDate"></span>
+          </div>
+        </div>
+
+        <!-- Items section -->
+        <div class="form-section-label">
+          Items in this Purchase
+          <button type="button" class="btn-add-item" id="addItemBtn">+ Add Item</button>
+        </div>
+
+        <div id="itemsContainer">
+          
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span class="btn-text">Submit Purchase</span>
+            <span class="btn-loader" style="display:none">Saving…</span>
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ==========  NOTIFICATION BAR ========== -->
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <!-- ========== TABLE CARD ========== -->
+    <section class="card table-card">
+      <div class="card-header table-card-header">
+        <div>
+          <h2 class="card-title">Inventory Records</h2>
+          <p class="card-subtitle">All submitted items across purchases</p>
+        </div>
+        <div class="table-controls">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search items…" />
+          <select id="filterType" class="filter-select">
+            <option value="">All Types</option>
+            <option>Electronics</option>
+            <option>Furniture</option>
+            <option>Clothing</option>
+            <option>Stationery</option>
+            <option>Kitchen</option>
+            <option>Sports</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="inventoryTable">
+          <thead>
+            <tr>
+              <th>Purchase ID</th>
+              <th>Item Name</th>
+              <th>Item Type</th>
+              <th>Purchase Date</th>
+              <th>In Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr class="empty-row">
+              <td colspan="6">No records yet. Submit a purchase above!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== EDIT MODAL ========== -->
+  <div id="editModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Edit Item</h3>
+        <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editIndex" />
+        <div class="form-group">
+          <label>Item Name <span class="req">*</span></label>
+          <input type="text" id="editName" />
+          <span class="error-msg" id="err-editName"></span>
+        </div>
+        <div class="form-group">
+          <label>Item Type <span class="req">*</span></label>
+          <select id="editType">
+            <option>Electronics</option>
+            <option>Furniture</option>
+            <option>Clothing</option>
+            <option>Stationery</option>
+            <option>Kitchen</option>
+            <option>Sports</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Purchase Date <span class="req">*</span></label>
+          <input type="date" id="editDate" />
+          <span class="error-msg" id="err-editDate"></span>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="editStock" />
+            <span class="custom-checkbox"></span>
+            In Stock
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
+        <button class="btn btn-primary" id="saveEdit">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DELETE CONFIRM MODAL ========== -->
+  <div id="deleteModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>Confirm Delete</h3>
+        <button class="modal-close" id="deleteModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="deleteItemName"></strong>? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+        <button class="btn btn-danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
