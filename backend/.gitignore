@@ -1,0 +1,11 @@
+# node modules
+node_modules/
+
+# environment variables
+.env
+
+# logs
+*.log
+
+# OS files
+.DS_Store
